@@ -94,8 +94,6 @@ async def handle_add(channel, msg, attachments):
         await channel.send(f'Invalid use of !add. Filetype must be one of ({supported})')
         return
 
-    
-
     fname = class_path / random_filename(uploaded_filename)
     await attach.save(fname)
 
@@ -113,7 +111,6 @@ async def handle_undo(channel, msg, attachments):
 
 
 async def handle_ls(channel, msg, attachments):
-
     msg = []
     for directory in (IMG_SAVE_PATH / 'train').iterdir():
         num_items = len(list(directory.glob('*')))
@@ -132,14 +129,13 @@ async def handle_ls(channel, msg, attachments):
     await channel.send(msg)
 
 async def handle_train(channel, msg, attachments):
-    await status('training...')
-
-    global IS_TRAINING
+    global IS_TRAINING    
 
     if IS_TRAINING:
         await channel.send('We are already training! Please wait until training has completed')
         return
 
+    await status('training...')
     IS_TRAINING = True
 
     cmd = 'python learner.py --train'
@@ -157,26 +153,25 @@ async def handle_debug(channel, msg, attachments):
 
     msgs.append(f'Uptime: {str(datetime.now() - START_TIME)}')
     
-    stdout, stderr = await run_cmd('cat /proc/meminfo | grep MemAvailable')
+    stdout, _ = await run_cmd('cat /proc/meminfo | grep MemAvailable', decode=True)
+    msgs.append(stdout)
 
-    for line in stdout.decode('utf-8').split('\n'):
-        msgs.append(line)
-
-    stdout, stderr = await run_cmd('nvidia-smi')
-
-    for line in stdout.decode('utf-8').split('\n'):
-        msgs.append(line)
+    stdout, _ = await run_cmd('nvidia-smi', decode=True)
+    msgs.append(stdout)
 
     msg = '\n'.join(msgs)
     await channel.send(msg)
 
 
-async def run_cmd(cmd):
+async def run_cmd(cmd, decode=False):
     proc = await asyncio.create_subprocess_shell(cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
 
     stdout, stderr = await proc.communicate()
+
+    if decode:
+        stdout, stderr = stdout.decode('utf-8'), stderr.decode('utf-8')
 
     return stdout, stderr
 
@@ -229,5 +224,4 @@ async def on_message(message):
 
 if __name__ == '__main__':
     print(discord.__version__)
-    print(config.get('bot_token'))
     client.run(config.get('bot_token'))

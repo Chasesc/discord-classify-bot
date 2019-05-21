@@ -40,10 +40,12 @@ def predict(img_path):
     learn.load('current_model')
 
     img = open_image(img_path)
-    pred_class,pred_idx,outputs = learn.predict(img)
-    print(f'Predicted Class: {pred_class}')
+    pred_class, pred_idx, outputs = learn.predict(img)
+
     zipped = zip((round(n, 3) for n in map(float, outputs)), data.classes)
     zipped = sorted(zipped, key=lambda tup:tup[0], reverse=True)
+    
+    print(f'Predicted Class: {pred_class}')
     print(f'Probs: {zipped}')
 
 
