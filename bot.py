@@ -61,9 +61,9 @@ async def handle_predict(channel, msg, attachments):
     stdout, stderr = await run_cmd(cmd)
 
     if stdout:
-        await channel.send(f'{stdout.decode()}')
+        await channel.send(stdout)
     if stderr:
-        await channel.send(f'[stderr]\n{stderr.decode()}')
+        await channel.send(f'[stderr]\n{stderr}')
 
 
 async def handle_add(channel, msg, attachments):
@@ -142,9 +142,9 @@ async def handle_train(channel, msg, attachments):
     stdout, stderr = await run_cmd(cmd)
 
     if stdout:
-        await channel.send(f'{stdout.decode()}')
+        await channel.send(stdout)
     if stderr:
-        await channel.send(f'[stderr]\n{stderr.decode()}')
+        await channel.send(f'[stderr]\n{stderr}')
 
     IS_TRAINING = False
 
@@ -153,17 +153,17 @@ async def handle_debug(channel, msg, attachments):
 
     msgs.append(f'Uptime: {str(datetime.now() - START_TIME)}')
     
-    stdout, _ = await run_cmd('cat /proc/meminfo | grep MemAvailable', decode=True)
+    stdout, _ = await run_cmd('cat /proc/meminfo | grep MemAvailable')
     msgs.append(stdout)
 
-    stdout, _ = await run_cmd('nvidia-smi', decode=True)
+    stdout, _ = await run_cmd('nvidia-smi')
     msgs.append(stdout)
 
     msg = '\n'.join(msgs)
     await channel.send(msg)
 
 
-async def run_cmd(cmd, decode=False):
+async def run_cmd(cmd, decode=True):
     proc = await asyncio.create_subprocess_shell(cmd,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE)
