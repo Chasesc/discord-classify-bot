@@ -1,4 +1,5 @@
 import argparse
+import config
 
 from pathlib import Path
 
@@ -11,7 +12,7 @@ from fastai.vision import transform
 from fastai.vision.image import open_image
 from fastai.vision.data import ImageDataBunch, verify_images, imagenet_stats
 
-TRAIN_PATH = Path('/media/chases/6CACED15ACECDA9A/discord_bot_files/whois/train')
+TRAIN_PATH = Path(config.get('save_path')) / 'train'
 
 def verify():
     for c in TRAIN_PATH.iterdir():
@@ -32,9 +33,6 @@ def train(num_epochs):
 
     learn.fit_one_cycle(num_epochs)
     learn.save('current_model')
-
-    #with open(TRAIN_PATH / 'models/classes', 'w') as f:
-    #    f.write(data.classes)
 
 def predict(img_path):
     data = ImageDataBunch.load_empty(TRAIN_PATH)
