@@ -31,7 +31,7 @@ async def handle_help(channel, msg, attachments):
 
     start_command_character = config.get('start_command_character')
     for command, command_info in COMMANDS.items():
-        command_info = command_info['info'].format(**config.CONFIG)
+        command_info = config.format_string(command_info['info'])
         msgs.append(f'{start_command_character}{command} - {command_info}')
 
     await channel.send('\n'.join(msgs))
@@ -162,6 +162,22 @@ async def handle_debug(channel, msg, attachments):
     msg = '\n'.join(msgs)
     await channel.send(msg)
 
+async def handle_cm(channel, msg, attachments):
+    err_msg = config.format_string('Confusion matrix not found! Run {start_command_character}train first.')
+    await send_file(channel, 'confusion_matrix.jpg', err_msg)
+
+async def handle_toploss(channel, msg, attachments):
+    err_msg = config.format_string('Top losses not found! Run {start_command_character}train first.')
+    await send_file(channel, 'top_losses.jpg', err_msg)
+
+async def send_file(channel, name, err_msg):
+    path = IMG_SAVE_PATH / name
+
+    if path.exists():
+        await channel.send(file=discord.File(path))
+    else:
+        await channel.send(err_msg)
+
 
 async def run_cmd(cmd, decode=True):
     proc = await asyncio.create_subprocess_shell(cmd,
@@ -183,6 +199,8 @@ COMMANDS = {
     'ls'      : dict(f=handle_ls,      info='View the current classes and the number of images per class'),
     'train'   : dict(f=handle_train,   info='Train the model using the added images'),
     'predict' : dict(f=handle_predict, info='<attachment> - Predict the class of <attachment> using the last trained model. You may omit {start_command_character}predict for this command.'),
+    'cm'      : dict(f=handle_cm,      info='Shows a confusion matrix on the validation set'),
+    'toploss' : dict(f=handle_toploss, info='Shows a heatmap of the top losses'),
     'debug'   : dict(f=handle_debug,   info='sends debug information')
 }
 

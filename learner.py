@@ -2,6 +2,7 @@ import argparse
 import config
 
 import numpy as np
+import matplotlib.pyplot as plt
 
 from pathlib import Path
 
@@ -16,7 +17,8 @@ from fastai.vision import transform
 from fastai.vision.image import open_image
 from fastai.vision.data import ImageDataBunch, verify_images, imagenet_stats
 
-TRAIN_PATH = Path(config.get('save_path')) / 'train'
+PATH = Path(config.get('save_path'))
+TRAIN_PATH = PATH / 'train'
 MODEL_NAME = 'current_model'
 
 def load_model(inference=False):
@@ -69,7 +71,12 @@ def predict(img_path):
 
 def interpret(learn):
     interp = ClassificationInterpretation.from_learner(learn)
-    print(interp.confusion_matrix())
+    
+    interp.plot_confusion_matrix()
+    plt.savefig(PATH / 'confusion_matrix.jpg')
+
+    interp.plot_top_losses(8)
+    plt.savefig(PATH / 'top_losses.jpg')
 
 
 parser = argparse.ArgumentParser()

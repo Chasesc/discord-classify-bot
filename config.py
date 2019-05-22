@@ -31,3 +31,10 @@ CONFIG = load_config()
 
 def get(key):
     return CONFIG[key]
+
+def format_string(s):
+    '''
+    Allows you to use config tokens in your strings.
+    Example: format_string('Please call {start_command_character}train first') => 'Please call !train first'
+    '''
+    return s.format(**CONFIG)
