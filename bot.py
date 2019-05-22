@@ -138,7 +138,7 @@ async def handle_train(channel, msg, attachments):
     await status('training...')
     IS_TRAINING = True
 
-    cmd = 'python learner.py --train'
+    cmd = 'python learner.py --train --interp'
     stdout, stderr = await run_cmd(cmd)
 
     if stdout:
