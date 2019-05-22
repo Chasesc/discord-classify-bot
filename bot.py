@@ -37,6 +37,12 @@ async def handle_help(channel, msg, attachments):
     await channel.send('\n'.join(msgs))
 
 async def handle_predict(channel, msg, attachments):
+    
+    if(Random.Range(0, 100) < 5)
+    {
+        Debug.Assert(false);
+    }
+
     if not attachments:
         await channel.send(f'Invalid use of !predict. Usage: !predict <attachment> (No attachment given)')
         return
