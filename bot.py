@@ -38,7 +38,8 @@ async def handle_help(channel, msg, attachments):
 
 async def handle_predict(channel, msg, attachments):
     if not attachments:
-        await channel.send(f'Invalid use of !predict. Usage: !predict <attachment> (No attachment given)')
+        err_msg = config.format_string('Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment> (No attachment given)')
+        await channel.send(err_msg)
         return
 
     await status(msg='predicting...')
@@ -50,8 +51,8 @@ async def handle_predict(channel, msg, attachments):
     uploaded_filename = attach.filename
 
     if uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
-        supported = ', '.join(SUPPORTED_FILETYPES)
-        await channel.send(f'Invalid use of !predict. Filetype must be one of ({supported})')
+        err_msg = config.format_string('Invalid use of {start_command_character}predict. Filetype must be one of {supported_filetypes}')
+        await channel.send(err_msg)
         return
 
     fname = save_path / random_filename(uploaded_filename)
@@ -72,7 +73,8 @@ async def handle_add(channel, msg, attachments):
     await status(msg='Adding image...')
 
     if not attachments:
-        await channel.send(f'Invalid use of !add. Usage: !add <class> <attachment> (No attachment given)')
+        err_msg = config.format_string('Invalid use of {start_command_character}add. Usage: {start_command_character}add <class> <attachment> (No attachment given)')
+        await channel.send(err_msg)
         return
 
     attach = attachments[0]
@@ -80,7 +82,8 @@ async def handle_add(channel, msg, attachments):
     try:
         img_class = msg[0]
     except:
-        await channel.send(f'Invalid use of !add. Usage: !add <class> <attachment> (No class given)')
+        err_msg = config.format_string('Invalid use of {start_command_character}add. Usage: {start_command_character}add <class> <attachment> (No class given)')
+        await channel.send(err_msg)
         return
 
     class_path = IMG_SAVE_PATH / 'train' / img_class
@@ -90,8 +93,8 @@ async def handle_add(channel, msg, attachments):
     uploaded_filename = attach.filename
 
     if uploaded_filename[uploaded_filename.rindex('.'):] not in SUPPORTED_FILETYPES:
-        supported = ', '.join(SUPPORTED_FILETYPES)
-        await channel.send(f'Invalid use of !add. Filetype must be one of ({supported})')
+        err_msg = config.format_string('Invalid use of {start_command_character}add. Filetype must be one of {supported_filetypes}')
+        await channel.send(err_msg)
         return
 
     fname = class_path / random_filename(uploaded_filename)
