@@ -2,22 +2,30 @@
 config.json schema
 
 {
+    "enable_auto_class_add" : bool,
+    "auto_class_add_threshold" : float,
     "start_command_character" : str,
     "idle_status_options" : [str],
     "allowed_channels" : [long],
     "supported_filetypes" : [str],
     "save_path" : str,
-    "bot_token" : str
+    "bot_token" : str,
+    "redis_host" : str,
+    "redis_port" : int
 }
 
 example:
 {
+    "enable_auto_class_add" : true,
+    "auto_class_add_threshold" : 0.90,
     "start_command_character" : "!",
     "idle_status_options" : ["Doing nothing...", "Idle"],
     "allowed_channels" : [4234987239487234],
     "supported_filetypes" : [".jpg", ".png", ".jpeg"],
     "save_path" : "~/bot/images,
-    "bot_token" : "< DISCORD BOT TOKEN >"
+    "bot_token" : "< DISCORD BOT TOKEN >",
+    "redis_host" : "localhost",
+    "redis_port" : 6379
 }
 '''
 

@@ -1,13 +1,17 @@
 import discord
+import redis
 
 import asyncio
 import config
 
 from datetime import datetime
+from collections import deque
 from pathlib  import Path
 from random   import choice
 
 client = discord.Client()
+r = redis.Redis(host=config.get('redis_host'), port=config.get('redis_port'))
+queue = deque(maxlen=100)
 
 START_TIME = datetime.now()
 
@@ -26,7 +30,7 @@ async def status(msg=None):
         msg = choice(config.get('idle_status_options'))
     await client.change_presence(activity=discord.Game(name=msg))
 
-async def handle_help(channel, msg, attachments):
+async def handle_help(channel, msg, attachments, **kwargs):
     msgs = []
 
     start_command_character = config.get('start_command_character')
@@ -36,7 +40,7 @@ async def handle_help(channel, msg, attachments):
 
     await channel.send('\n'.join(msgs))
 
-async def handle_predict(channel, msg, attachments):
+async def handle_predict(channel, msg, attachments, **kwargs):
     if not attachments:
         err_msg = config.format_string('Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment> (No attachment given)')
         await channel.send(err_msg)
@@ -45,6 +49,7 @@ async def handle_predict(channel, msg, attachments):
     await status(msg='predicting...')
 
     attach = attachments[0]
+    user_message_id = kwargs.get('msg_id')
 
     save_path = IMG_SAVE_PATH / 'predict'
 
@@ -59,15 +64,25 @@ async def handle_predict(channel, msg, attachments):
     await attach.save(fname)
     
     cmd = f'python learner.py --img_path "{fname}"'
+    if config.get('enable_auto_class_add'):
+        cmd += f' --auto_class_add_threshold {config.get("auto_class_add_threshold")} --message_id {user_message_id}'
+
     stdout, stderr = await run_cmd(cmd)
 
     if stdout:
-        await channel.send(stdout)
+        stdout_msg = await channel.send(stdout)
     if stderr:
         await channel.send(f'[stderr]\n{stderr}')
 
+    if int(r.get(f'{user_message_id}_added')): # only add to the queue if the image was auto-added to the training set
+        queue.append({
+            'user_message_id'  : user_message_id,
+            'bot_message_id'   : stdout_msg.id,
+            'auto_added_image' : r.get(user_message_id)
+        })
 
-async def handle_add(channel, msg, attachments):
+
+async def handle_add(channel, msg, attachments, **kwargs):
     global LAST_SAVED_FILE
 
     await status(msg='Adding image...')
@@ -102,7 +117,7 @@ async def handle_add(channel, msg, attachments):
 
     LAST_SAVED_FILE = fname
 
-async def handle_undo(channel, msg, attachments):
+async def handle_undo(channel, msg, attachments, **kwargs):
     global LAST_SAVED_FILE
 
     if LAST_SAVED_FILE:
@@ -113,7 +128,7 @@ async def handle_undo(channel, msg, attachments):
         await channel.send(f'Nothing to undo...')
 
 
-async def handle_ls(channel, msg, attachments):
+async def handle_ls(channel, msg, attachments, **kwargs):
     msg = []
     for directory in (IMG_SAVE_PATH / 'train').iterdir():
         num_items = len(list(directory.glob('*')))
@@ -131,7 +146,7 @@ async def handle_ls(channel, msg, attachments):
 
     await channel.send(msg)
 
-async def handle_train(channel, msg, attachments):
+async def handle_train(channel, msg, attachments, **kwargs):
     global IS_TRAINING    
 
     if IS_TRAINING:
@@ -151,7 +166,7 @@ async def handle_train(channel, msg, attachments):
 
     IS_TRAINING = False
 
-async def handle_debug(channel, msg, attachments):
+async def handle_debug(channel, msg, attachments, **kwargs):
     msgs = []
 
     msgs.append(f'Uptime: {str(datetime.now() - START_TIME)}')
@@ -165,7 +180,7 @@ async def handle_debug(channel, msg, attachments):
     msg = '\n'.join(msgs)
     await channel.send(msg)
 
-async def handle_cm(channel, msg, attachments):
+async def handle_cm(channel, msg, attachments, **kwargs):
     err_msg = config.format_string('Confusion matrix not found! Run {start_command_character}train first.')
     await send_file(channel, 'confusion_matrix.jpg', err_msg)
 
@@ -173,7 +188,7 @@ async def handle_toploss(channel, msg, attachments):
     err_msg = config.format_string('Top losses not found! Run {start_command_character}train first.')
     await send_file(channel, 'top_losses.jpg', err_msg)
 
-async def send_file(channel, name, err_msg):
+async def send_file(channel, name, err_msg, **kwargs):
     path = IMG_SAVE_PATH / name
 
     if path.exists():
@@ -239,9 +254,24 @@ async def on_message(message):
     if handler:
         handler_function = handler['f']
 
-        await handler_function(channel, args, message.attachments)
+        await handler_function(channel, args, message.attachments, msg_id=message.id)
 
     await status()
+
+@client.event
+async def on_reaction_add(reaction, user):
+    if reaction.emoji == '👎':
+        for auto_added_image_details in queue:
+            if reaction.message.id == auto_added_image_details['bot_message_id']:
+                path = Path(auto_added_image_details['auto_added_image'].decode())
+                if path.exists():
+                    path.unlink()
+                    await reaction.message.channel.send('Removed image from training set...')
+                break
+        else:
+            await reaction.message.channel.send(f'There is no auto-added image associated with this message OR this message is too old (queue.maxlen={queue.maxlen})')
+
+
 
 if __name__ == '__main__':
     print(discord.__version__)
