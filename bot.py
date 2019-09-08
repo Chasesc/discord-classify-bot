@@ -21,7 +21,7 @@ SUPPORTED_FILETYPES =  set(config.get('supported_filetypes'))
 LAST_SAVED_FILE = None
 IS_TRAINING     = False
 
-def random_filename(name):
+def unique_filename(name):
     time = str(datetime.now()).replace(':', '_')
     return f'{time}_{name}'
 
@@ -60,7 +60,7 @@ async def handle_predict(channel, msg, attachments, **kwargs):
         await channel.send(err_msg)
         return
 
-    fname = save_path / random_filename(uploaded_filename)
+    fname = save_path / unique_filename(uploaded_filename)
     await attach.save(fname)
     
     cmd = f'python learner.py --img_path "{fname}"'
@@ -112,7 +112,7 @@ async def handle_add(channel, msg, attachments, **kwargs):
         await channel.send(err_msg)
         return
 
-    fname = class_path / random_filename(uploaded_filename)
+    fname = class_path / unique_filename(uploaded_filename)
     await attach.save(fname)
 
     LAST_SAVED_FILE = fname
