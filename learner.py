@@ -26,7 +26,7 @@ TRAIN_PATH = PATH / 'train'
 MODEL_NAME = 'current_model'
 
 AUTO_ADD_MESSAGE = '''
-                   (This image was automatically added to the training set [confidence ({conf:.3f}) > class_add_thresh ({thresh})])
+                   This image was automatically added to the training set [confidence ({conf:.3f}) > class_add_thresh ({thresh})]
                    If this is incorrect, react with 👎 to this message.
                    '''
 
