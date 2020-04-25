@@ -53,6 +53,8 @@ async def handle_predict(channel, msg, attachments, **kwargs):
 
     save_path = IMG_SAVE_PATH / 'predict'
 
+    save_path.mkdir(exist_ok=True)
+
     uploaded_filename = attach.filename
 
     if uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
