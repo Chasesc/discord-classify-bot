@@ -8,6 +8,7 @@ from datetime import datetime
 from collections import deque
 from pathlib  import Path
 from random   import choice
+import urllib.request
 
 client = discord.Client()
 r = redis.Redis(host=config.get('redis_host'), port=config.get('redis_port'))
@@ -41,30 +42,39 @@ async def handle_help(channel, msg, attachments, **kwargs):
     await send_message(channel,'\n'.join(msgs))
 
 async def handle_predict(channel, msg, attachments, **kwargs):
+    has_attatchments = True
     if not attachments:
-        err_msg = config.format_string('Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment> (No attachment given)')
-        await send_message(channel, err_msg)
-        return
+        has_attatchments = False
 
     await status(msg='predicting...')
 
-    attach = attachments[0]
     user_message_id = kwargs.get('msg_id')
 
     save_path = IMG_SAVE_PATH / 'predict'
 
     save_path.mkdir(exist_ok=True)
 
-    uploaded_filename = attach.filename
+    if has_attatchments:
+        attach = attachments[0]
+        uploaded_filename = attach.filename
 
-    if uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
-        err_msg = config.format_string('Invalid use of {start_command_character}predict. Filetype must be one of {supported_filetypes}')
-        await send_message(channel, err_msg)
-        return
+        if  uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
+            err_msg = config.format_string('Invalid use of {start_command_character}predict. Filetype must be one of {supported_filetypes}')
+            await send_message(channel, err_msg)
+            return
 
-    fname = save_path / unique_filename(uploaded_filename)
-    await attach.save(fname)
-    
+        fname = save_path / unique_filename(uploaded_filename)
+        await attach.save(fname)
+    else:
+        fname = save_path / unique_filename("")
+
+        try:
+            urllib.request.urlretrieve(msg[0], fname)
+        except ValueError:
+            err_msg = config.format_string('Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment, url> (No valid url given)')
+            await send_message(channel, err_msg)
+            return
+
     cmd = f'python learner.py --img_path "{fname}"'
     if config.get('enable_auto_class_add'):
         cmd += f' --auto_class_add_threshold {config.get("auto_class_add_threshold")} --message_id {user_message_id}'
