@@ -125,3 +125,5 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Docker Override
+docker-compose.override.yml

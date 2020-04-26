@@ -1,0 +1,12 @@
+version: '3.5'
+services:
+    bot:
+        tty: true
+        build:
+            context: .
+        depends_on:
+            - redis
+        shm_size: '1gb'
+    redis:
+        image: redis
+        shm_size: '1gb'
