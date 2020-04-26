@@ -269,10 +269,10 @@ async def on_reaction_add(reaction, user):
                 path = Path(auto_added_image_details['auto_added_image'].decode())
                 if path.exists():
                     path.unlink()
-                    await reaction.message.send_message(channel,'Removed image from training set...')
+                    await send_message(reaction.message.channel,'Removed image from training set...')
                 break
         else:
-            await reaction.message.send_message(channel, f'There is no auto-added image associated with this message OR this message is too old (queue.maxlen={queue.maxlen})')
+            await send_message(reaction.message.channel, f'There is no auto-added image associated with this message OR this message is too old (queue.maxlen={queue.maxlen})')
 
 
 
