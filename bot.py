@@ -16,7 +16,7 @@ queue = deque(maxlen=100)
 START_TIME = datetime.now()
 
 IMG_SAVE_PATH       = Path(config.get('save_path'))
-SUPPORTED_FILETYPES = set( config.get('supported_filetypes'))
+SUPPORTED_FILETYPESs = set(config.get('supported_filetypes'))
 
 LAST_SAVED_FILE = None
 IS_TRAINING     = False
