@@ -24,7 +24,7 @@ example:
     "supported_filetypes" : [".jpg", ".png", ".jpeg"],
     "save_path" : "~/bot/images",
     "bot_token" : "< DISCORD BOT TOKEN >",
-    "redis_host" : "localhost",
+    "redis_host" : "redis",
     "redis_port" : 6379
 }
 '''
