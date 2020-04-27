@@ -3,3 +3,4 @@ services:
     bot:
         volumes:
             - ~/bot/images/:/usr/src/app/data/
+            - ~/.torch/models/:/root/.cache/torch/checkpoints/
