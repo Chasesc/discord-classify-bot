@@ -22,7 +22,7 @@ example:
     "idle_status_options" : ["Doing nothing...", "Idle"],
     "allowed_channels" : [4234987239487234],
     "supported_filetypes" : [".jpg", ".png", ".jpeg"],
-    "save_path" : "~/bot/images",
+    "save_path" : "/usr/src/app/data/",
     "bot_token" : "< DISCORD BOT TOKEN >",
     "redis_host" : "redis",
     "redis_port" : 6379
