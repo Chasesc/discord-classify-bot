@@ -58,7 +58,7 @@ async def handle_predict(channel, msg, attachments, **kwargs):
         attach = attachments[0]
         uploaded_filename = attach.filename
 
-        if  uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
+        if uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
             err_msg = config.format_string('Invalid use of {start_command_character}predict. Filetype must be one of {supported_filetypes}')
             await send_message(channel, err_msg)
             return
