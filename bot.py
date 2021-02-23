@@ -42,10 +42,6 @@ async def handle_help(channel, msg, attachments, **kwargs):
     await send_message(channel,'\n'.join(msgs))
 
 async def handle_predict(channel, msg, attachments, **kwargs):
-    has_attatchments = True
-    if not attachments:
-        has_attatchments = False
-
     await status(msg='predicting...')
 
     user_message_id = kwargs.get('msg_id')
@@ -54,7 +50,7 @@ async def handle_predict(channel, msg, attachments, **kwargs):
 
     save_path.mkdir(exist_ok=True)
 
-    if has_attatchments:
+    if attachments:
         attach = attachments[0]
         uploaded_filename = attach.filename
 
@@ -72,6 +68,10 @@ async def handle_predict(channel, msg, attachments, **kwargs):
             urllib.request.urlretrieve(msg[0], fname)
         except ValueError:
             err_msg = config.format_string('Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment, url> (No valid url given)')
+            await send_message(channel, err_msg)
+            return
+        except:
+            err_msg = config.format_string('Error occured upon loading url')
             await send_message(channel, err_msg)
             return
 

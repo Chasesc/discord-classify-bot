@@ -19,6 +19,8 @@ from fastai.vision import transform
 from fastai.vision.image import open_image
 from fastai.vision.data import ImageDataBunch, verify_images, imagenet_stats
 
+from PIL import UnidentifiedImageError
+
 r = redis.Redis(host=config.get('redis_host'), port=config.get('redis_port'))
 
 PATH = Path(config.get('save_path'))
@@ -114,4 +116,7 @@ args = parser.parse_args()
 if args.train:
     train(args.num_epochs, args.interp)
 else:
-    predict(args.img_path, float(args.auto_class_add_threshold), args.message_id)
+    try:
+        predict(args.img_path, float(args.auto_class_add_threshold), args.message_id)
+    except UnidentifiedImageError:
+        print("Given prediction image could not be loaded")
