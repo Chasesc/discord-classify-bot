@@ -300,10 +300,7 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-    if is_allowed_in_channel(reaction.message.channel) and reaction.emoji == '👎' and reaction.count == 1 
-    
-    
-    :
+    if is_allowed_in_channel(reaction.message.channel) and reaction.emoji == '👎' and reaction.count == 1:
         for auto_added_image_details in queue:
             if reaction.message.id == auto_added_image_details['bot_message_id']:
                 path = Path(
