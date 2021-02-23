@@ -304,7 +304,11 @@ async def on_reaction_add(reaction, user):
         for auto_added_image_details in queue:
             if reaction.message.id == auto_added_image_details['bot_message_id']:
                 path = Path(
-                    auto_added_image_details['auto_added_image'].decode())
+                    auto_added_image_details
+                    [
+                      'auto_added_image'
+                              ].decode()
+                      )
                 if path.exists():
                     path.unlink()
                     await send_message(reaction.message.channel, 'Removed image from training set...')
