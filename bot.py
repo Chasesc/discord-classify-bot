@@ -245,15 +245,15 @@ async def send_message(channel, msg):
 
 
 COMMANDS = {
-    'help': dict(f=handle_help,    info='You are looking at it'),
-    'add': dict(f=handle_add,     info='<class> <attachment> - Add an image for training'),
-    'undo': dict(f=handle_undo,    info='Undo the previous add'),
-    'ls': dict(f=handle_ls,      info='View the current classes and the number of images per class'),
-    'train': dict(f=handle_train,   info='Train the model using the added images'),
-    'predict': dict(f=handle_predict, info='<attachment> - Predict the class of <attachment> using the last trained model. You may omit {start_command_character}predict for this command.'),
-    'cm': dict(f=handle_cm,      info='Shows a confusion matrix on the validation set'),
-    'toploss': dict(f=handle_toploss, info='Shows a heatmap of the top losses'),
-    'debug': dict(f=handle_debug,   info='sends debug information')
+    'help'    : dict(f=handle_help,    info='You are looking at it'),
+    'add'     : dict(f=handle_add,     info='<class> <attachment> - Add an image for training'),
+    'undo'    : dict(f=handle_undo,    info='Undo the previous add'),
+    'ls'      : dict(f=handle_ls,      info='View the current classes and the number of images per class'),
+    'train'   : dict(f=handle_train,   info='Train the model using the added images'),
+    'predict' : dict(f=handle_predict, info='<attachment> - Predict the class of <attachment> using the last trained model. You may omit {start_command_character}predict for this command.'),
+    'cm'      : dict(f=handle_cm,      info='Shows a confusion matrix on the validation set'),
+    'toploss' : dict(f=handle_toploss, info='Shows a heatmap of the top losses'),
+    'debug'   : dict(f=handle_debug,   info='sends debug information')
 }
 
 
@@ -300,7 +300,7 @@ async def on_message(message):
 
 @client.event
 async def on_reaction_add(reaction, user):
-    if is_allowed_in_channel(reaction.message.channel) and reaction.emoji == '👎' and reaction.count == 1 and len(await reaction.users().flatten()) == 1:
+    if is_allowed_in_channel(reaction.message.channel) and reaction.emoji == '👎' and reaction.count == 1 :
         for auto_added_image_details in queue:
             if reaction.message.id == auto_added_image_details['bot_message_id']:
                 path = Path(
