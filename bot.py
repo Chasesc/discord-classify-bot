@@ -6,8 +6,8 @@ import config
 
 from datetime import datetime
 from collections import deque
-from pathlib  import Path
-from random   import choice
+from pathlib import Path
+from random import choice
 import urllib.request
 
 client = discord.Client()
@@ -16,20 +16,23 @@ queue = deque(maxlen=100)
 
 START_TIME = datetime.now()
 
-IMG_SAVE_PATH       = Path(config.get('save_path'))
-SUPPORTED_FILETYPES =  set(config.get('supported_filetypes'))
+IMG_SAVE_PATH = Path(config.get('save_path'))
+SUPPORTED_FILETYPES = set(config.get('supported_filetypes'))
 
 LAST_SAVED_FILE = None
-IS_TRAINING     = False
+IS_TRAINING = False
+
 
 def unique_filename(name):
     time = str(datetime.now()).replace(':', '_')
     return f'{time}_{name}'
 
+
 async def status(msg=None):
     if not msg:
         msg = choice(config.get('idle_status_options'))
     await client.change_presence(activity=discord.Game(name=msg))
+
 
 async def handle_help(channel, msg, attachments, **kwargs):
     msgs = []
@@ -39,7 +42,8 @@ async def handle_help(channel, msg, attachments, **kwargs):
         command_info = config.format_string(command_info['info'])
         msgs.append(f'{start_command_character}{command} - {command_info}')
 
-    await send_message(channel,'\n'.join(msgs))
+    await send_message(channel, '\n'.join(msgs))
+
 
 async def handle_predict(channel, msg, attachments, **kwargs):
     await status(msg='predicting...')
@@ -55,7 +59,8 @@ async def handle_predict(channel, msg, attachments, **kwargs):
         uploaded_filename = attach.filename
 
         if uploaded_filename[uploaded_filename.rindex('.'):].lower() not in SUPPORTED_FILETYPES:
-            err_msg = config.format_string('Invalid use of {start_command_character}predict. Filetype must be one of {supported_filetypes}')
+            err_msg = config.format_string(
+                'Invalid use of {start_command_character}predict. Filetype must be one of {supported_filetypes}')
             await send_message(channel, err_msg)
             return
 
@@ -67,7 +72,8 @@ async def handle_predict(channel, msg, attachments, **kwargs):
         try:
             urllib.request.urlretrieve(msg[0], fname)
         except ValueError:
-            err_msg = config.format_string('Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment, url> (No valid url given)')
+            err_msg = config.format_string(
+                'Invalid use of {start_command_character}predict. Usage: {start_command_character}predict <attachment, url> (No valid url given)')
             await send_message(channel, err_msg)
             return
         except:
@@ -86,11 +92,12 @@ async def handle_predict(channel, msg, attachments, **kwargs):
     if stderr:
         await send_message(channel, f'[stderr]\n{stderr}')
 
-    if int(r.get(f'{user_message_id}_added')): # only add to the queue if the image was auto-added to the training set
+    # only add to the queue if the image was auto-added to the training set
+    if int(r.get(f'{user_message_id}_added')):
         queue.append({
-            'user_message_id'  : user_message_id,
-            'bot_message_id'   : stdout_msg.id,
-            'auto_added_image' : r.get(user_message_id)
+            'user_message_id': user_message_id,
+            'bot_message_id': stdout_msg.id,
+            'auto_added_image': r.get(user_message_id)
         })
 
 
@@ -100,7 +107,8 @@ async def handle_add(channel, msg, attachments, **kwargs):
     await status(msg='Adding image...')
 
     if not attachments:
-        err_msg = config.format_string('Invalid use of {start_command_character}add. Usage: {start_command_character}add <class> <attachment> (No attachment given)')
+        err_msg = config.format_string(
+            'Invalid use of {start_command_character}add. Usage: {start_command_character}add <class> <attachment> (No attachment given)')
         await send_message(channel, err_msg)
         return
 
@@ -109,7 +117,8 @@ async def handle_add(channel, msg, attachments, **kwargs):
     try:
         img_class = msg[0]
     except:
-        err_msg = config.format_string('Invalid use of {start_command_character}add. Usage: {start_command_character}add <class> <attachment> (No class given)')
+        err_msg = config.format_string(
+            'Invalid use of {start_command_character}add. Usage: {start_command_character}add <class> <attachment> (No class given)')
         await send_message(channel, err_msg)
         return
 
@@ -120,7 +129,8 @@ async def handle_add(channel, msg, attachments, **kwargs):
     uploaded_filename = attach.filename
 
     if uploaded_filename[uploaded_filename.rindex('.'):] not in SUPPORTED_FILETYPES:
-        err_msg = config.format_string('Invalid use of {start_command_character}add. Filetype must be one of {supported_filetypes}')
+        err_msg = config.format_string(
+            'Invalid use of {start_command_character}add. Filetype must be one of {supported_filetypes}')
         await send_message(channel, err_msg)
         return
 
@@ -128,6 +138,7 @@ async def handle_add(channel, msg, attachments, **kwargs):
     await attach.save(fname)
 
     LAST_SAVED_FILE = fname
+
 
 async def handle_undo(channel, msg, attachments, **kwargs):
     global LAST_SAVED_FILE
@@ -158,11 +169,12 @@ async def handle_ls(channel, msg, attachments, **kwargs):
 
     await send_message(channel, msg)
 
+
 async def handle_train(channel, msg, attachments, **kwargs):
-    global IS_TRAINING    
+    global IS_TRAINING
 
     if IS_TRAINING:
-        await send_message(channel,'We are already training! Please wait until training has completed')
+        await send_message(channel, 'We are already training! Please wait until training has completed')
         return
 
     await status('training...')
@@ -178,11 +190,12 @@ async def handle_train(channel, msg, attachments, **kwargs):
 
     IS_TRAINING = False
 
+
 async def handle_debug(channel, msg, attachments, **kwargs):
     msgs = []
 
     msgs.append(f'Uptime: {str(datetime.now() - START_TIME)}')
-    
+
     stdout, _ = await run_cmd('cat /proc/meminfo | grep MemAvailable')
     msgs.append(stdout)
 
@@ -192,13 +205,18 @@ async def handle_debug(channel, msg, attachments, **kwargs):
     msg = '\n'.join(msgs)
     await send_message(channel, msg)
 
+
 async def handle_cm(channel, msg, attachments, **kwargs):
-    err_msg = config.format_string('Confusion matrix not found! Run {start_command_character}train first.')
+    err_msg = config.format_string(
+        'Confusion matrix not found! Run {start_command_character}train first.')
     await send_file(channel, 'confusion_matrix.jpg', err_msg)
 
+
 async def handle_toploss(channel, msg, attachments, **kwargs):
-    err_msg = config.format_string('Top losses not found! Run {start_command_character}train first.')
+    err_msg = config.format_string(
+        'Top losses not found! Run {start_command_character}train first.')
     await send_file(channel, 'top_losses.jpg', err_msg)
+
 
 async def send_file(channel, name, err_msg, **kwargs):
     path = IMG_SAVE_PATH / name
@@ -211,8 +229,8 @@ async def send_file(channel, name, err_msg, **kwargs):
 
 async def run_cmd(cmd, decode=True):
     proc = await asyncio.create_subprocess_shell(cmd,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE)
+                                                 stdout=asyncio.subprocess.PIPE,
+                                                 stderr=asyncio.subprocess.PIPE)
 
     stdout, stderr = await proc.communicate()
 
@@ -220,6 +238,7 @@ async def run_cmd(cmd, decode=True):
         stdout, stderr = stdout.decode('utf-8'), stderr.decode('utf-8')
 
     return stdout, stderr
+
 
 async def send_message(channel, msg):
     return await channel.send(msg[:2000])
@@ -237,27 +256,32 @@ COMMANDS = {
     'debug'   : dict(f=handle_debug,   info='sends debug information')
 }
 
+
 @client.event
 async def on_ready():
     print("The bot is ready!")
     await status()
 
+def is_allowed_in_channel(channel): 
+  return channel.id in config.get('allowed_channels')
+
 @client.event
 async def on_message(message):
-    if message.author == client.user: # ignore our own messages
+    if message.author == client.user:  # ignore our own messages
         return
 
     has_attachment = bool(message.attachments)
 
     channel = message.channel
 
-    message_not_in_allowed_channel = channel.id not in config.get('allowed_channels')
-    message_not_command = not message.content.startswith(config.get('start_command_character')) and not has_attachment
+    message_not_command = not message.content.startswith(
+        config.get('start_command_character')) and not has_attachment
 
-    if message_not_in_allowed_channel or message_not_command:
+    if not is_allowed_in_channel(channel) or message_not_command:
         return
 
-    msg = message.content[1:].lower() # get rid of the {start_command_character}
+    # get rid of the {start_command_character}
+    msg = message.content[1:].lower()
 
     if not msg:
         msg = 'predict'
@@ -273,19 +297,19 @@ async def on_message(message):
 
     await status()
 
+
 @client.event
 async def on_reaction_add(reaction, user):
-    if reaction.emoji == '👎':
+    if is_allowed_in_channel(reaction.message.channel) and reaction.emoji == '👎' and reaction.count == 1:
         for auto_added_image_details in queue:
             if reaction.message.id == auto_added_image_details['bot_message_id']:
                 path = Path(auto_added_image_details['auto_added_image'].decode())
                 if path.exists():
                     path.unlink()
-                    await send_message(reaction.message.channel,'Removed image from training set...')
+                    await send_message(reaction.message.channel, 'Removed image from training set...')
                 break
         else:
             await send_message(reaction.message.channel, f'There is no auto-added image associated with this message OR this message is too old (queue.maxlen={queue.maxlen})')
-
 
 
 if __name__ == '__main__':
